@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Navbar from '@/components/navbar'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
@@ -63,12 +63,16 @@ interface FileFolderProps {
 function page() {
     const { getToken } = useAuth()
     const [loading, setLoading] = useState(false)
+    const [token, setToken] = useState("")
     const [folderFileData, setFolderFileData] = useState<FileFolderProps>({} as FileFolderProps)
     const params = useParams();
+    const wsRef = React.useRef<WebSocket | null>(null);
+
 
     const HandleSingleImage = async () => {
         setLoading(true)
         const jwtToken = await getToken()
+        setToken(jwtToken ? jwtToken : "")
         axios
             .get(`http://127.0.0.1:8000/api/v1/fileFolders/Image?imageFileID=${params.id ? params.id as string : undefined}`, {
                 headers: {
@@ -92,8 +96,41 @@ function page() {
             })
     }
 
+    const EstablishWebSocket = async () => {
+
+    }
+
     useEffect(() => {
         HandleSingleImage()
+        // if (folderFileData?.upload_status === 'PENDING' || folderFileData?.upload_status === 'PROCESSING') {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const ws = new WebSocket(`${protocol}//127.0.0.1:8000//"ws/files/?token=${token}`);
+        wsRef.current = ws;
+
+        ws.onopen = () => {
+            console.log('WebSocket connection established');
+        }
+
+        ws.onclose = () => {
+            console.log('WebSocket connection closed');
+        }
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            console.log('WebSocket message received:', data);
+        }
+        const pingInterval = setInterval(() => {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'ping' }));
+            }
+        }, 30000);
+
+        return () => {
+            clearInterval(pingInterval);
+            ws.close();
+            console.log('webSocket connection is closed for a while...')
+        }
+        // }
     }, [])
 
     return (
@@ -113,7 +150,7 @@ function page() {
                                 <div className='w-[60%] flex justify-center items-center h-full px-5 relative'>
                                     {
                                         folderFileData.upload_status == 'PENDING' || folderFileData.upload_status == 'PROCESSING' || folderFileData.upload_status == 'FAILED' ? (
-                                            <ImageProcessing parent='image'/>
+                                            <ImageProcessing parent='image' />
                                         ) : (
                                             <Image src={folderFileData?.file_url} height={500} width={500} alt='Uploaded Image in a big view' className=' w-full h-fit absolute top-0 left-0 right-0' />
                                         )
