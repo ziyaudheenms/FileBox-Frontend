@@ -1,8 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+# FileBox - File Storage Web App
+
+FileBox is a modern cloud storage web application built with [Next.js](https://nextjs.org), providing a secure and user-friendly interface to manage, upload, and organize your files. The project leverages a clean dashboard UI, advanced file/folder management, and real-time cloud storage statistics.
+
+## Features
+
+- **Dashboard Overview**: Centralized dashboard to view, search, and manage all your files and folders.
+- **File & Folder Management**: Create folders, upload files, and organize your data in a hierarchical structure.
+- **Grid/List View Toggle**: Switch between grid and list layouts for file/folder display.
+- **Search & Filters**: Quickly search files/folders and filter by type (images, documents, videos, etc.) or sort by name, date, or size.
+- **File Actions**: Mark as favorite, move to trash, view details, and more via contextual dropdown menus.
+- **Drag & Drop Upload**: Easily upload files with drag-and-drop or browse functionality.
+- **Storage Usage Visualization**: Real-time display of used and available storage, with breakdown by file type (images, documents, others).
+- **Recent Uploads**: Quick access to recently uploaded files.
+- **Authentication**: Secure access using Clerk authentication.
+- **Responsive Design**: Optimized for both desktop and mobile devices.
+
+## Dashboard Page Overview
+
+The dashboard page (`app/(home)/dashboard/page.tsx`) is the main hub for file management. It features:
+
+- **Sidebar Navigation**: Access to main sections (Dashboard, Images, Documents, Others, Trash, Favorites, Storage Store).
+- **Main Content Area**:
+	- **Breadcrumb & Search**: Home navigation, search bar, and filter/sort dropdown.
+	- **File/Folder Listing**: Displayed in grid or list view, showing all items with icons, names, and quick actions.
+	- **Load More**: Paginated loading for large file sets.
+	- **Empty State**: Friendly message when no files/folders are present.
+- **Right Panel**:
+	- **Create Folder**: Instantly create new folders at the root level.
+	- **Upload File**: Drag-and-drop or browse to upload files, with visual feedback.
+	- **Storage Status**: Visual bar and stats for storage usage (used, free, by type).
+	- **Recent Uploads**: List of recently uploaded files with size and time info.
+
+### Dashboard UI Example
+
+![Dashboard Screenshot](#)
+
+> The dashboard provides a seamless experience for managing files, with intuitive controls and real-time updates. (See the attached screenshot for a visual reference.)
+
+## Technologies Used
+
+- **Next.js** (App Router)
+- **React**
+- **TypeScript**
+- **Tailwind CSS** (for styling)
+- **Clerk** (authentication)
+- **Axios** (API requests)
+- **Sonner** (notifications)
+- **Tabler Icons & Lucide React** (icons)
 
 ## Getting Started
 
-First, run the development server:
+## Getting Started
+
+
+First, install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
@@ -16,9 +78,39 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+You can start editing the dashboard by modifying `app/(home)/dashboard/page.tsx`. The page auto-updates as you edit the file.
+
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Folder Structure
+
+```
+filedrive/
+├── app/
+│   ├── (home)/dashboard/page.tsx   # Main dashboard page
+│   └── ...
+├── components/                     # Reusable UI components
+├── data/                           # Static data files
+├── lib/                            # Utility functions
+├── public/                         # Static assets
+├── ...
+```
+
+## API & Backend
+
+- The dashboard fetches file/folder data from a backend API (see `getREQUEST` in the dashboard page).
+- Authentication is handled via Clerk.
+- File uploads and folder creation trigger API calls and update the UI in real time.
+
+## Contributing
+
+Contributions are welcome! Please open issues or submit pull requests for improvements or bug fixes.
+
+## License
+
+This project is licensed under the MIT License.
 
 ## Learn More
 
