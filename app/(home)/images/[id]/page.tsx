@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Navbar from '@/components/navbar'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
@@ -95,43 +95,56 @@ function page() {
                 setLoading(false)
             })
     }
-
-    const EstablishWebSocket = async () => {
-
-    }
-
     useEffect(() => {
         HandleSingleImage()
-        // if (folderFileData?.upload_status === 'PENDING' || folderFileData?.upload_status === 'PROCESSING') {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const ws = new WebSocket(`${protocol}//127.0.0.1:8000//"ws/files/?token=${token}`);
-        wsRef.current = ws;
-
-        ws.onopen = () => {
-            console.log('WebSocket connection established');
-        }
-
-        ws.onclose = () => {
-            console.log('WebSocket connection closed');
-        }
-
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            console.log('WebSocket message received:', data);
-        }
-        const pingInterval = setInterval(() => {
-            if (ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ type: 'ping' }));
+        if (folderFileData?.upload_status === 'PENDING' || folderFileData?.upload_status === 'PROCESSING') {
+            console.log('Setting up WebSocket connection for file ID:', folderFileData.id);
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            if (!token) {
+                console.log('waiting for token')
+                return
             }
-        }, 30000);
+            const ws = new WebSocket(`${protocol}//127.0.0.1:8000/ws/files/?token=${token}`);
+            wsRef.current = ws;
 
-        return () => {
-            clearInterval(pingInterval);
-            ws.close();
-            console.log('webSocket connection is closed for a while...')
+            ws.onopen = () => {
+                console.log('WebSocket connection established');
+            }
+
+            ws.onclose = () => {
+                console.log('WebSocket connection closed');
+            }
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                console.log('WebSocket message received:', data);
+                setFolderFileData((prevData) => {
+                    if (data.file_id == prevData.id) {
+                        console.log('Updating file data for file ID:', data.file_id);
+                        prevData.upload_status = data.upload_status;
+                        prevData.file_url = data.file_url
+                        console.log("Updated prevData:", prevData);
+                        return { ...prevData };
+                    }
+                    return { ...prevData };
+                });
+            }
+            const pingInterval = setInterval(() => {
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'ping' }));
+                }
+            }, 30000);
+
+            return () => {
+                clearInterval(pingInterval);
+                ws.close();
+                console.log('webSocket connection is closed for a while...')
+            }
         }
-        // }
-    }, [])
+        else{
+            console.log('No need for WebSocket connection. Current upload status:', folderFileData?.upload_status);
+        }
+    }, [token , folderFileData?.id])
 
     return (
         <div>
