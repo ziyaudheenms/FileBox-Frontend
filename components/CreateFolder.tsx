@@ -12,10 +12,9 @@ import { useRouter } from 'next/navigation'
 interface FolderCreateProps {
   isRoot: boolean;
   folderID?: string;
-  onUploadSuccess: () => void;
 }
 
-function CreateFolder({ isRoot, folderID, onUploadSuccess }: FolderCreateProps) {
+function CreateFolder({ isRoot, folderID }: FolderCreateProps) {
   const { getToken } = useAuth()
   const [upLoading, setUpLoading] = useState<Boolean | false>(false)
   const [folderName, setFolderName] = useState("")
@@ -53,7 +52,7 @@ function CreateFolder({ isRoot, folderID, onUploadSuccess }: FolderCreateProps) 
 
         if (res.data.status_code == 5000) {
           toast.success("Folder Successfully Created")
-          // onUploadSuccess()
+         
 
           isRoot ? router.push(`dashboard/${res.data.data}`) : router.push(`dashboard/${folderID}/${res.data.data}`)
         }

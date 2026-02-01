@@ -11,10 +11,10 @@ const chunkSize = 1024 * 1024 * 2;
 interface FileUploadProps {
     isRoot: boolean;
     folderID?: string;
-    onSuccess: () => void;
+    
 }
 
-function FileUpload({ isRoot, folderID, onSuccess }: FileUploadProps) {
+function FileUpload({ isRoot, folderID }: FileUploadProps) {
     const { getToken } = useAuth()
     const [upLoading, setUpLoading] = useState<Boolean | false>(false)
     const inputRef = useRef<HTMLInputElement>(null);
@@ -24,8 +24,8 @@ function FileUpload({ isRoot, folderID, onSuccess }: FileUploadProps) {
     let APIENDPOINT = ""
     let APIENDPOINTFORCHUNKED = ""
 
-    !isRoot ? APIENDPOINT = "http://127.0.0.1:8000/api/v1/Create/Image/" : APIENDPOINT = `http://127.0.0.1:8000/api/v1/Create/Image/?folderID=${folderID}/`
-    !isRoot ? APIENDPOINTFORCHUNKED = "http://127.0.0.1:8000/api/v1/Create/Image/Chunk/Join/" : APIENDPOINTFORCHUNKED = `http://127.0.0.1:8000/api/v1/Create/Image/Chunk/Join/?folderID=${folderID}/`
+    !isRoot ? APIENDPOINT = "http://127.0.0.1:8000/api/v1/Create/Image/" : APIENDPOINT = `http://127.0.0.1:8000/api/v1/Create/Image/?folderID=${folderID}`
+    !isRoot ? APIENDPOINTFORCHUNKED = "http://127.0.0.1:8000/api/v1/Create/Image/Chunk/Join/" : APIENDPOINTFORCHUNKED = `http://127.0.0.1:8000/api/v1/Create/Image/Chunk/Join/?folderID=${folderID}`
 
     const chunkUploader = async (e: React.ChangeEvent<HTMLInputElement>) => {
         setUpLoading(true)
