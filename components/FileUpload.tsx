@@ -2,7 +2,7 @@
 import React, { useRef, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '@clerk/nextjs';
-import { IconFileUpload } from '@tabler/icons-react';
+import { IconFileUpload, IconUpload } from '@tabler/icons-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
@@ -11,7 +11,7 @@ const chunkSize = 1024 * 1024 * 2;
 interface FileUploadProps {
     isRoot: boolean;
     folderID?: string;
-    
+
 }
 
 function FileUpload({ isRoot, folderID }: FileUploadProps) {
@@ -133,34 +133,57 @@ function FileUpload({ isRoot, folderID }: FileUploadProps) {
     }
 
     return (
-        <div className='w-full'>
-            <input
-                type="file"
-                ref={inputRef}
-                onChange={chunkUploader}
-                className='w-full'
-            />
-            {
-                upLoading ? (
-                    <div className='border border-neutral-800 py-2 px-2 rounded-xl'>
-                        <div className='rounded-xl flex items-center gap-3'>
-                            <div className='bg-neutral-800 p-2 rounded-lg '>
-                                <IconFileUpload stroke={2} height={20} width={20} className='text-neutral-400' />
-                            </div>
-                            <div className='flex flex-col gap-1'>
-                                <p className='text-neutral-400 font-sans text-sm'>Uploading the image {progress}</p>
-                                <div className='w-full h-2 rounded-full bg-neutral-800'>
-                                    <div className={`w-[${progress}%] bg-neutral-100 rounded-full h-2`}></div>
+
+        <div className='border border-neutral-800 py-5 px-5 rounded-xl flex flex-col gap-4'>
+            <div className='flex items-center gap-2'>
+                <div className='bg-neutral-800 p-2 rounded-lg '>
+                    <IconUpload stroke={2} height={25} width={25} className='text-neutral-400' />
+                </div>
+                <div>
+                    <h3 className='text-neutral-100 font-figtree font-bold '>Upload File</h3>
+                    <p className='text-neutral-400 font-sans font-light'>Drag and drop or browse</p>
+                </div>
+            </div>
+            <div className='border-2 border-neutral-800 border-dashed rounded-xl flex flex-col justify-center items-center  p-6'>
+                <div className='bg-neutral-800 p-2 rounded-full '>
+                    <IconFileUpload stroke={2} height={30} width={30} className='text-neutral-400' />
+                </div>
+                <h3 className='text-neutral-100 font-figtree font-medium'>Click to upload</h3>
+                <p className='text-neutral-400 font-sans text-sm'>or drag and drop your files</p>
+                <div className='w-full'>
+                    <input
+                        type="file"
+                        ref={inputRef}
+                        onChange={chunkUploader}
+                        className='w-full'
+                    />
+                    {
+                        upLoading ? (
+                            <div className='border border-neutral-800 py-2 px-2 rounded-xl'>
+                                <div className='rounded-xl flex items-center gap-3'>
+                                    <div className='bg-neutral-800 p-2 rounded-lg '>
+                                        <IconFileUpload stroke={2} height={20} width={20} className='text-neutral-400' />
+                                    </div>
+                                    <div className='flex flex-col gap-1'>
+                                        <p className='text-neutral-400 font-sans text-sm'>Uploading the image {progress}</p>
+                                        <div className='w-full h-2 rounded-full bg-neutral-800'>
+                                            <div className={`w-[${progress}%] bg-neutral-100 rounded-full h-2`}></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                ) : (
-                    <div>
-                    </div>
-                )
-            }
+                        ) : (
+                            <div>
+                            </div>
+                        )
+                    }
+                </div>
+            </div>
+
         </div>
+
+
+
     );
 }
 

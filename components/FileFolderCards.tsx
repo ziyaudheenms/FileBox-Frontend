@@ -75,15 +75,15 @@ function FileFolderCards({ folderFileData, isGridLayout, onHandleTrashUpdation, 
                                                 <DropdownMenuGroup>
                                                     <DropdownMenuItem>
                                                         Name
-                                                        <DropdownMenuShortcut className='text-blue-600 font-bold'>Untited File</DropdownMenuShortcut>
+                                                        <DropdownMenuShortcut className='text-blue-600 font-bold'>{item.name.length > 10 ? item.name.slice(0, 10) : item.name} {item.name.length > 10 ? ("...") : (" ")}</DropdownMenuShortcut>
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem>
                                                         Size
-                                                        <DropdownMenuShortcut className='text-red-600 font-bold'>100kb</DropdownMenuShortcut>
+                                                        <DropdownMenuShortcut className='text-red-600 font-bold'>{item.size > 1024 ? `${(item.size / 1024).toFixed(2)} mb` : `${item.size} kb`}</DropdownMenuShortcut>
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem>
                                                         Type
-                                                        <DropdownMenuShortcut className='text-green-600 font-bold'>image/jpeg</DropdownMenuShortcut>
+                                                        <DropdownMenuShortcut className='text-green-600 font-bold'>{item.file_extension ? item.file_extension : "Folder"}</DropdownMenuShortcut>
                                                     </DropdownMenuItem>
                                                     {
                                                         isTrashPage ? (
