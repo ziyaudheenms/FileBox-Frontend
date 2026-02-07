@@ -12,7 +12,6 @@ import axios from 'axios'
 import { useAuth } from '@clerk/nextjs'
 import InfiniteLoader from '@/components/InfiniteLoader'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
 import { EmptyPage } from '@/components/EmptyPage'
 import FileFolderCards from '@/components/FileFolderCards'
 
@@ -43,12 +42,12 @@ function page() {
     const [hasData, setHasData] = useState(false)
     const [empty, setEmpty] = useState(false)
 
-    const router = useRouter()
     // Used For getting all the folder/file data from the backend
     const HandleGetAllFileFolderData = async () => {
         setHasData(false)
         setLoading(true)
         const jwtToken = await getToken()
+        localStorage.setItem("refreshToken", jwtToken || "")
 
         // GET Request that is used to fetch all the folder/file data
         axios
@@ -93,7 +92,7 @@ function page() {
         setHasData(false)
         setLoading(true)
         const jwtToken = await getToken()
-
+        console.log("JWT TOKEN IN UPDATE FUNC OF FAVORITE PAGE", jwtToken)
         // GET Request that is used to fetch all the folder/file data
         axios
             .get(getREQUEST, {
@@ -127,6 +126,7 @@ function page() {
 
     const HandleTrashUpdation = async (fileFolderID: number) => {
         const jwtToken = await getToken()
+        console.log("JWT TOKEN IN TRASH FUNC OF FAVORITE PAGE", jwtToken)
         if (jwtToken) {
             axios
                 .get(`${process.env.NEXT_PUBLIC_DOMAIN}/api/v1/trash/FolderFile/?folderFileID=${fileFolderID}`, {

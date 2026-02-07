@@ -4,7 +4,7 @@ import Navbar from '@/components/navbar'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
-import { IconAdjustmentsAlt, IconClock, IconFileUpload, IconFolder, IconHome, IconLayoutGridRemove, IconList, IconPdf, IconPencil, IconPictureInPictureFilled, IconServer, IconTextSize, IconUpload, IconVideo, } from '@tabler/icons-react'
+import { IconAdjustmentsAlt, IconClock, IconFolder, IconHome, IconLayoutGridRemove, IconList, IconPdf, IconPencil, IconPictureInPictureFilled, IconTextSize, IconVideo, } from '@tabler/icons-react'
 import { SearchIcon } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import axios from 'axios'
@@ -16,6 +16,7 @@ import { toast } from 'sonner'
 import { EmptyPage } from '@/components/EmptyPage'
 import FileFolderCards from '@/components/FileFolderCards'
 import RecentUploads from '@/components/RecentUploads'
+import StorageUpdate from '@/components/StorageUpdate'
 
 interface FileFolderProps {
   id: number;
@@ -47,7 +48,7 @@ interface StorageStatusProps {
 }
 
 function page() {
-  const { getToken } = useAuth() // Clerk authentication hook to get JWT token
+  const { getToken } = useAuth() 
   const [gridLayout, setgridLayout] = useState(true)
   const [FileFolderData, setFileFolderData] = useState<FileFolderProps[]>([])
   const [loading, setLoading] = useState(false)
@@ -55,12 +56,22 @@ function page() {
   const [hasData, setHasData] = useState(false)
   const [empty, setEmpty] = useState(false)
   const [storageDetails, setStorageDetails] = useState<StorageStatusProps>({} as StorageStatusProps)
+  const [cursorParam , setCursorParam] = useState<String | null>(null)
+
+  const getTheCurrentUrlParam = (url:string , param_key:string) => {
+    const url_constructed = new URL(url)
+    const params = new URLSearchParams(url_constructed.search);
+    setCursorParam(params.get(param_key));
+  }
 
   // Used For getting all the folder/file data from the backend
   const HandleGetAllFileFolderData = async () => {
     setHasData(false)
     setLoading(true)
+    getTheCurrentUrlParam(getREQUEST , "cursor")
     const jwtToken = await getToken()
+    localStorage.setItem("refreshToken", jwtToken || "")
+    console.log(jwtToken)
 
     // GET Request that is used to fetch all the folder/file data
     axios
@@ -75,7 +86,7 @@ function page() {
           setEmpty(true)
         }
         else if (res.data.status_code === 5000) {
-          console.log(res.data.data)
+          console.log(res)
           setFileFolderData((prev) => {
             const newData = res.data.data;
             // Filter out items in newData that are already present in prev
@@ -125,10 +136,11 @@ function page() {
     setHasData(false)
     setLoading(true)
     const jwtToken = await getToken()
+    console.log(jwtToken , "from update function")
 
     // GET Request that is used to fetch all the folder/file data
     axios
-      .get(getREQUEST, {
+      .get(`${process.env.NEXT_PUBLIC_DOMAIN}/api/v1/fileFolders`, {
         headers: {
           authorization: `Bearer ${jwtToken}`,
         },
@@ -159,14 +171,18 @@ function page() {
 
   const HandleTrashUpdation = async (fileFolderID: number) => {
     const jwtToken = await getToken()
+  
+    // Check if fileFolderID is in the first 12 FileFolderData
+    const isInFirst12 = FileFolderData.slice(0, 12).some(item => item.id === fileFolderID);
+
     if (jwtToken) {
       axios
-        .get(`${process.env.NEXT_PUBLIC_DOMAIN}/api/v1/trash/FolderFile/?folderFileID=${fileFolderID}`, {
+        .get(isInFirst12 ? `${process.env.NEXT_PUBLIC_DOMAIN}/api/v1/trash/FolderFile/?folderFileID=${fileFolderID}&cursor=None` : `${process.env.NEXT_PUBLIC_DOMAIN}/api/v1/trash/FolderFile/?folderFileID=${fileFolderID}&cursor=${cursorParam}` , {
           headers: {
             authorization: `Bearer ${jwtToken}`,
           },
         })
-        .then((res) => {
+        .then((res) => {-
           console.log(res.data)
           if (res.data.status_code === 5000) {
             toast.success("Item moved to Trash.")
@@ -185,6 +201,7 @@ function page() {
 
   const HandleFavoriteUpdation = async (fileFolderID: number) => {
     const jwtToken = await getToken()
+    console.log(jwtToken)
     if (jwtToken) {
       axios
         .get(`${process.env.NEXT_PUBLIC_DOMAIN}/api/v1/favorite/FolderFile/?folderFileID=${fileFolderID}`, {
@@ -196,7 +213,7 @@ function page() {
           console.log(res.data)
           if (res.data.status_code === 5000) {
             toast.success("Item added to Favorite.")
-            GetUpdatedFileFolderData()
+            // GetUpdatedFileFolderData()
           }
           else if (res.data.status_code === 5001) {
             toast.error("Marking Favorite failed.")
@@ -331,78 +348,13 @@ function page() {
 
           {/*CREATE FOLDER */}
           <CreateFolder isRoot={true} />
-
           {/*UPLOAD OPTIONS */}
-          <div className='border border-neutral-800 py-5 px-5 rounded-xl flex flex-col gap-4'>
-            <div className='flex items-center gap-2'>
-              <div className='bg-neutral-800 p-2 rounded-lg '>
-                <IconUpload stroke={2} height={25} width={25} className='text-neutral-400' />
-              </div>
-              <div>
-                <h3 className='text-neutral-100 font-figtree font-bold '>Upload File</h3>
-                <p className='text-neutral-400 font-sans font-light'>Drag and drop or browse</p>
-              </div>
-            </div>
-            <div className='border-2 border-neutral-800 border-dashed rounded-xl flex flex-col justify-center items-center  p-6'>
-              <div className='bg-neutral-800 p-2 rounded-full '>
-                <IconFileUpload stroke={2} height={30} width={30} className='text-neutral-400' />
-              </div>
-              <h3 className='text-neutral-100 font-figtree font-medium'>Click to upload</h3>
-              <p className='text-neutral-400 font-sans text-sm'>or drag and drop your files</p>
-              <FileUpload isRoot={false} />
-            </div>
-
-          </div>
-
-
+          <FileUpload isRoot={false} />
           {/* STORAGR STATUS*/}
-          <div className='border border-neutral-800 py-5 px-5 rounded-xl flex flex-col gap-4'>
-            <div className='flex items-center gap-2'>
-              <div className='bg-neutral-800 p-2 rounded-lg '>
-                <IconServer stroke={2} height={25} width={25} className='text-neutral-400' />
-              </div>
-              <div>
-                <h3 className='text-neutral-100 font-figtree font-bold '>Storage</h3>
-                <p className='text-neutral-400 font-sans font-light'>Cloud Storage Usage</p>
-              </div>
-
-            </div>
-            <div>
-              <div className='border-b-2 border-neutral-800'>
-                <div className='w-full h-2 bg-neutral-800 text-neutral-800 rounded-full'>
-                  <div
-                    className='h-2 bg-neutral-100 text-neutral-800 rounded-full'
-                    style={{ width: `${storageDetails.storage_percentage_used}%` }}
-                  ></div>
-                </div>
-                <div className='flex items-center justify-between font-sans py-2'>
-                  <h5 className='text-neutral-400'>{storageDetails?.clerk_user_used_storage} used</h5>
-                  <h5 className='text-neutral-100'>{storageDetails?.clerk_user_storage_limit} free</h5>
-                </div>
-              </div>
-
-            </div>
-            <div className='flex flex-wrap items-center justify-between w-full'>
-              <div className='flex flex-col items-center justify-center '>
-                <div className='h-2 w-2 bg-red-600 rounded-full'></div>
-                <h5 className='text-neutral-400 font-sans font-light text-sm'>Images</h5>
-                <h3 className='text-neutral-100 font-figtree text-lg font-bold'>{storageDetails?.total_image_storage}</h3>
-              </div>
-              <div className='flex flex-col items-center justify-center '>
-                <div className='h-2 w-2 bg-blue-600 rounded-full'></div>
-                <h5 className='text-neutral-400 font-sans font-light text-sm'>Documents</h5>
-                <h3 className='text-neutral-100 font-figtree text-lg font-bold'>{storageDetails?.total_document_storage}</h3>
-              </div>
-              <div className='flex flex-col items-center justify-center '>
-                <div className='h-2 w-2 bg-green-600 rounded-full'></div>
-                <h5 className='text-neutral-400 font-sans font-light text-sm'>Others</h5>
-                <h3 className='text-neutral-100 font-figtree text-lg font-bold'>{storageDetails?.total_other_storage}</h3>
-              </div>
-            </div>
-          </div>
-
+          <StorageUpdate storageDetails={storageDetails} />
           {/* RECENT UPLOADS SECTION */}
           <RecentUploads />
+
         </div>
       </div>
     </div>

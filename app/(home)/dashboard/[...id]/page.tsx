@@ -55,6 +55,7 @@ function page() {
         setLoading(true)
 
         const jwtToken = await getToken()
+        localStorage.setItem("refreshToken", jwtToken || "")
         // GET Request that is used to fetch all the folder/file data
         axios
             .get(`${getREQUEST}${secondIteration ? '&' : '?'}parentFolderID=${params.id ? params.id[params.id.length - 1] as string : undefined}`, {
@@ -99,14 +100,14 @@ function page() {
 
     }
 
-    const GetUpdatedFileFolderData = async () => {
+    const GetUpdatedFileFolderData = async (id : number) => {
         setHasData(false)
         setLoading(true)
         const jwtToken = await getToken()
-
+        console.log("JWT TOKEN IN UPDATE FUNC OF DASHBOARD PAGE SINGLE PAGE", jwtToken)
         // GET Request that is used to fetch all the folder/file data
         axios
-            .get(getREQUEST, {
+            .get(`${getREQUEST}?parentFolderID=${params.id ? params.id[params.id.length - 1] as string : undefined}`, {
                 headers: {
                     authorization: `Bearer ${jwtToken}`,
                 },
@@ -137,6 +138,7 @@ function page() {
 
     const HandleTrashUpdation = async (fileFolderID: number) => {
         const jwtToken = await getToken()
+        console.log("JWT TOKEN IN TRASH FUNC OF DASHBOARD PAGE SINGLE PAGE", jwtToken)
         if (jwtToken) {
             axios
                 .get(`${process.env.NEXT_PUBLIC_DOMAIN}/api/v1/trash/FolderFile/?folderFileID=${fileFolderID}`, {
@@ -148,7 +150,7 @@ function page() {
                     console.log(res.data)
                     if (res.data.status_code === 5000) {
                         toast.success("Item moved to Trash.")
-                        GetUpdatedFileFolderData()
+                        GetUpdatedFileFolderData(fileFolderID)
                     }
                     else if (res.data.status_code === 5001) {
                         toast.error("Xant Delete item. Move to Trash failed.")
@@ -163,6 +165,7 @@ function page() {
 
     const HandleFavoriteUpdation = async (fileFolderID: number) => {
         const jwtToken = await getToken()
+        console.log("JWT TOKEN IN FAVORITE FUNC OF DASHBOARD PAGE SINGLE PAGE", jwtToken)
         if (jwtToken) {
             axios
                 .get(`${process.env.NEXT_PUBLIC_DOMAIN}/api/v1/favorite/FolderFile/?folderFileID=${fileFolderID}`, {
@@ -174,7 +177,7 @@ function page() {
                     console.log(res.data)
                     if (res.data.status_code === 5000) {
                         toast.success("Item added to Favorite.")
-                        GetUpdatedFileFolderData()
+                        // GetUpdatedFileFolderData()
                     }
                     else if (res.data.status_code === 5001) {
                         toast.error("Marking Favorite failed.")
@@ -279,27 +282,7 @@ function page() {
                 <div className='w-[27%] px-2 py-2 flex flex-col gap-3 h-screen overflow-y-scroll no-scrollbar'>
 
                     {/*UPLOAD OPTIONS */}
-
-                    <div className='border border-neutral-800 py-5 px-5 rounded-xl flex flex-col gap-4'>
-                        <div className='flex items-center gap-2'>
-                            <div className='bg-neutral-800 p-2 rounded-lg '>
-                                <IconUpload stroke={2} height={25} width={25} className='text-neutral-400' />
-                            </div>
-                            <div>
-                                <h3 className='text-neutral-100 font-figtree font-bold '>Upload File</h3>
-                                <p className='text-neutral-400 font-sans font-light'>Drag and drop or browse</p>
-                            </div>
-                        </div>
-                        <div className='border-2 border-neutral-800 border-dashed rounded-xl flex flex-col justify-center items-center  p-6'>
-                            <div className='bg-neutral-800 p-2 rounded-full '>
-                                <IconFileUpload stroke={2} height={30} width={30} className='text-neutral-400' />
-                            </div>
-                            <h3 className='text-neutral-100 font-figtree font-medium'>Click to upload</h3>
-                            <p className='text-neutral-400 font-sans text-sm'>or drag and drop your files</p>
-                            <FileUpload isRoot={true} folderID={params.id ? params.id[params.id.length - 1] as string : undefined} />
-
-                        </div>
-                    </div>
+                    <FileUpload isRoot={true} folderID={params.id ? params.id[params.id.length - 1] as string : undefined} />
                     <CreateFolder isRoot={false} folderID={params.id ? params.id[params.id.length - 1] as string : undefined} />
                 </div>
             </div>

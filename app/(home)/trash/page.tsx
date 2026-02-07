@@ -50,6 +50,7 @@ function page() {
     setHasData(false)
     setLoading(true)
     const jwtToken = await getToken()
+    localStorage.setItem("refreshToken", jwtToken || "")
 
     // GET Request that is used to fetch all the folder/file data
     axios
@@ -94,10 +95,11 @@ function page() {
     setHasData(false)
     setLoading(true)
     const jwtToken = await getToken()
+    console.log("JWT TOKEN IN UPDATE FUNC OF TRASH PAGE", jwtToken)
 
     // GET Request that is used to fetch all the folder/file data
     axios
-      .get(getREQUEST, {
+      .get(`${process.env.NEXT_PUBLIC_DOMAIN}/api/v1/fileFolders/Trash`, {
         headers: {
           authorization: `Bearer ${jwtToken}`,
         },
@@ -128,6 +130,7 @@ function page() {
   
   const HandleTrashUpdation = async (fileFolderID: number) => {
     const jwtToken = await getToken()
+    console.log("JWT TOKEN IN TRASH FUNC OF TRASH PAGE", jwtToken)
     if (jwtToken) {
       axios
         .get(`${process.env.NEXT_PUBLIC_DOMAIN}/api/v1/trash/FolderFile/?folderFileID=${fileFolderID}`, {
