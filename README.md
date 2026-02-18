@@ -1,5 +1,5 @@
 
-# FileBox - File Storage Web App
+# FileBox - Cloud Storage Platform
 
 FileBox is a modern cloud storage web application built with [Next.js](https://nextjs.org), providing a secure and user-friendly interface to manage, upload, and organize your files. The project leverages a clean dashboard UI, advanced file/folder management, and real-time cloud storage statistics.
 
