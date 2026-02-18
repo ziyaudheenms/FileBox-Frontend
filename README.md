@@ -32,12 +32,6 @@ The dashboard page (`app/(home)/dashboard/page.tsx`) is the main hub for file ma
 	- **Storage Status**: Visual bar and stats for storage usage (used, free, by type).
 	- **Recent Uploads**: List of recently uploaded files with size and time info.
 
-### Dashboard UI Example
-
-![Dashboard Screenshot](#)
-
-> The dashboard provides a seamless experience for managing files, with intuitive controls and real-time updates. (See the attached screenshot for a visual reference.)
-
 ## Technologies Used
 
 - **Next.js** (App Router)
@@ -48,6 +42,107 @@ The dashboard page (`app/(home)/dashboard/page.tsx`) is the main hub for file ma
 - **Axios** (API requests)
 - **Sonner** (notifications)
 - **Tabler Icons & Lucide React** (icons)
+
+## Folder Structure
+
+```
+components.json
+eslint.config.mjs
+middleware.ts
+next-env.d.ts
+next.config.ts
+package.json
+postcss.config.mjs
+README.md
+tsconfig.json
+app/
+    globals.css
+    layout.tsx
+    page.tsx
+    (auth)/
+        layout.tsx
+        sign-in/
+            page.tsx
+        sign-up/
+            page.tsx
+    (home)/
+        layout.tsx
+        dashboard/
+            page.tsx
+            [...id]/
+                page.tsx
+        Documents/
+            page.tsx
+            [id]/
+                page.tsx
+        favorites/
+            page.tsx
+        images/
+            page.jsx
+            [id]/
+                page.tsx
+        others/
+            page.tsx
+            [id]/
+                page.tsx
+        sharable/
+            image/
+                [id]/
+                    page.tsx
+        test/
+            [...id]/
+                page.tsx
+        trash/
+            page.tsx
+components/
+    CreateFolder.tsx
+    EmptyPage.tsx
+    FileFolderCards.tsx
+    FileUpload.tsx
+    ImageProcessing.tsx
+    InfiniteLoader.tsx
+    navbar.tsx
+    NoAccess.tsx
+    RecentUploads.tsx
+    SideBarNavItems.tsx
+    StorageUpdate.tsx
+    ui/
+        alert-dialog.tsx
+        button-group.tsx
+        button.tsx
+        card.tsx
+        dialog.tsx
+        dropdown-menu.tsx
+        empty.tsx
+        field.tsx
+        input-group.tsx
+        input.tsx
+        label.tsx
+        separator.tsx
+        sonner.tsx
+        spinner.tsx
+        textarea.tsx
+        toggle-group.tsx
+        toggle.tsx
+data/
+    SideBar.tsx
+lib/
+    utils.ts
+public/
+    logo.html
+    logo_files/
+        index-DAMeWpAu.css
+        photo-1472099645785-5658abf4ff4e
+        photo-1472099645785-5658abf4ff4e(1)
+        photo-1506905925346-21bda4d32df4
+```
+
+## API & Backend
+
+- Dashboard fetches file/folder data from backend API via `getREQUEST`
+- Authentication handled by Clerk
+- File uploads and folder creation trigger API calls with real-time UI updates
+
 
 ## Getting Started
 
