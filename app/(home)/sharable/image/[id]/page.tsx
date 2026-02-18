@@ -1,24 +1,14 @@
 'use client'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import Navbar from '@/components/navbar'
-import Image from 'next/image'
-import { Button } from '@/components/ui/button'
-import { IconCopyX, IconDownload, IconHome, IconPencilCheck, IconShare, IconUser, IconLink, IconFocusAuto, IconGlobe, IconKey, IconLock, IconGlobeFilled, IconLockAccess } from '@tabler/icons-react'
-import {
-    InputGroup,
-    InputGroupAddon,
-    InputGroupButton,
-    InputGroupInput,
-    InputGroupText,
-    InputGroupTextarea,
-} from "@/components/ui/input-group"
-import Link from 'next/link'
+import React, { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { useAuth } from '@clerk/nextjs'
-import axios from 'axios'
-import { toast } from 'sonner'
-import InfiniteLoader from '@/components/InfiniteLoader'
-import ImageProcessing from '@/components/ImageProcessing'
+import Navbar from '@/components/navbar';
+import axios from 'axios';
+import { useAuth } from '@clerk/nextjs';
+import InfiniteLoader from '@/components/InfiniteLoader';
+import ImageProcessing from '@/components/ImageProcessing';
+import Image from 'next/image';
+import { IconCopyX, IconDownload, IconLink, IconPencilCheck, IconShare, IconUser } from '@tabler/icons-react';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogClose,
@@ -29,11 +19,31 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import { Link2, SearchIcon, User2 } from 'lucide-react'
-import { useUser } from '@clerk/nextjs' // this import is to get the important details about the current logged in user.
-import { ButtonGroup } from '@/components/ui/button-group'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
+import { User2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+interface FileFolderProps {
+    id: number;
+    author: string;
+    size: number;
+    parentFolder: string | null;
+    name: string;
+    uploaded_at: Date;
+    updated_at: Date;
+    isfolder: boolean;
+    is_root_folder: boolean;
+    file_url: string | null;
+    file_extension: string | null;
+    upload_status: string;
+    celery_task_ID: string | null;
+    is_trash: boolean;
+    is_favorite: boolean;
+    permission_type?: string;
+    permission_granded_at?: Date;
+}
 
-// Custom function to get relative time based on the DATE object.
 function getRelativeTime(date: Date | string | undefined): string {
     if (!date) return '';
     const now = new Date();
@@ -54,316 +64,50 @@ function getRelativeTime(date: Date | string | undefined): string {
 }
 
 
-interface FileFolderProps {
-    id: number;
-    author: string;
-    size: number;
-    parentFolder: string | null;
-    name: string;
-    uploaded_at: Date;
-    updated_at: Date;
-    isfolder: boolean;
-    is_root_folder: boolean;
-    file_url: string | null;
-    file_extension: string | null;
-    upload_status: string;
-    celery_task_ID: string | null;
-    is_trash: boolean;
-    is_favorite: boolean;
-}
-
-interface usersWithPermission {
-    id: number;
-    username: string;
-    email: string;
-    profile: string;
-    permission: string;
-}
-
-interface usersWithEmailSimilarity {
-    pk: number;
-    clerk_user_email: string;
-    clerk_user_name: string;
-    clerk_user_profile_img: string;
-
-
-}
-
-interface permissionUserProps {
-    email: string;
-    permission: string;
-}
-
-
 function page() {
-
-    const { user } = useUser()
-    const { getToken } = useAuth()
-    const [loading, setLoading] = useState(false)
-    const [folderFileData, setFolderFileData] = useState<FileFolderProps>({} as FileFolderProps)
-    const [userToPermission, setUserToPermission] = useState<string | null>(null)  // Input box value for searching the email similar user.
-    const [permissionUsers, setPermissionUsers] = useState<permissionUserProps[]>([])  //used to store the array of users which are going to get the permission in the format -> emial:permissionChoice
-    const [permissionChoice, setPermissionChoice] = useState("VIEW") // used to store the permission choice 
-    const [usersWithPermission, setUsersWithPermission] = useState<usersWithPermission[]>([]) //used to store those who already has the permission.
-    const [usersWithEmailSimilarity, setusersWithEmailSimilarity] = useState<usersWithEmailSimilarity[] | null>(null)    // this state is used to store the emails we get with similarity
-    const [permissionLoader, setpermissionLoader] = useState<Boolean>(false)
-    const [isPublic, setIsPublic] = useState<Boolean>(true)
-    const [upDatePermissionLoader, setupDatePermissionLoader] = useState<Boolean>(false)
     const params = useParams();
-    const wsRef = React.useRef<WebSocket | null>(null);
+    const router = useRouter()
+    const pathname = usePathname();
+    const { getToken } = useAuth()
+    const [loading , setLoading] = useState(false)
+    // initally no access stays false that means we have access 
+    const [noAccess , setNoAccess] = useState<Boolean>(false) 
+    const [folderFileData, setFolderFileData] = useState<FileFolderProps>({} as FileFolderProps)
 
-
-
-    const getTheUserForAssigningPermission = async () => {
-        const jwtToken = await getToken()
-        axios.post(
-            `${process.env.NEXT_PUBLIC_DOMAIN}/api/v1/permission/getUser`,
-            {
-                'userToFind': userToPermission,
-            },
-            {
-                headers: {
-                    authorization: `Bearer ${jwtToken}`,
-                },
-            },
-        ).then((responce) => {
-            console.log(responce)
-            if (responce.data.status_code == 5000) {
-                setusersWithEmailSimilarity(responce.data.data)
-            }
-            else if (responce.data.status_code == 5002) {
-                setUserToPermission(null)
-                toast.info("opps ! No User is found with this email.")
-            }
-        }).catch((error) => {
-            console.error(error)
-        }).finally(() => {
-
-        })
-    }
-
-    const HandleUserSelection = (userEmail: string, userPermission: string) => {
-        let permissionObject = {
-            "email": userEmail,
-            "permission": userPermission
-        } // the format in which the details is send to the backend.
-        setPermissionUsers((prev) => [...(Array.isArray(prev) ? prev : []), permissionObject])
-        setusersWithEmailSimilarity(null)
-        setUserToPermission(null)
-        toast(`${userEmail}`, {
-            description: "Adding the email to the list",
-            action: {
-                label: `${userPermission}`,
-                onClick: () => console.log("Undo"),
-            },
-        })
-    }
-
-
-    const HandleUpdatePermission = async () => {
-        setupDatePermissionLoader(true)
-        console.log("entered into the function")
-        const jwtToken = await getToken()
-        axios.post(
-            `${process.env.NEXT_PUBLIC_DOMAIN}/api/v1/permission/grandUsers?fileFolderID=${params.id ? params.id as string : undefined}`,
-            {
-                'usersToGrandPermission': permissionUsers,
-            },
-            {
-                headers: {
-                    authorization: `Bearer ${jwtToken}`,
-                },
-            },
-        )
-            .then((res) => {
-                if (res.data.status_code == 5000) {
-                    toast.success('Updated the Users With Permission')
-                }
-                else if (res.data.status_code == 5003) {
-                    toast.error('You Have No Rights To Access This Data')
-                }
-                else if (res.data.status_code == 5002) {
-                    toast.error(res.data.message)
-                }
-                else if (res.data.status_code == 4001) {
-                    toast.error("user not found !")
-                }
-               
-            })
-            .catch((err) => {
-                toast.error("some error occured !")
-            })
-            .finally(() => {
-                setupDatePermissionLoader(false)
-            })
-    }
-
-    const getPermittedUsers = async () => {
-        setpermissionLoader(true)
-        const jwtToken = await getToken()
-        axios
-            .get(`${process.env.NEXT_PUBLIC_DOMAIN}/api/v1/permission/Users?fileFolderID=${params.id ? params.id as string : undefined}`, {
-                headers: {
-                    authorization: `Bearer ${jwtToken}`,
-                },
-            })
-            .then((res) => {
-                console.log(res)
-                if (res.data.status_code == 5000) {
-                    setUsersWithPermission(res.data.data)
-                    toast.success(res.data.message)
-                    setpermissionLoader(false)
-                }
-                else if (res.data.status_code == 5002) {
-                    toast.error(res.data.message)
-                }
-                else if (res.data.status_code == 4001) {
-                    toast.error('user not found !')
-                }
-            })
-            .catch((err) => {
-                console.log(err)
-                toast.error("some error occured !")
-            })
-            .finally(() => {
-                setpermissionLoader(false)
-            })
-    }
-
-    const getShareLink = async () => {
-        const jwtToken = await getToken()
-        axios
-            .post(`${process.env.NEXT_PUBLIC_DOMAIN}/api/v1/get/sharableLink?fileFolderID=${params.id ? params.id as string : undefined}&type=image`, {
-                "access_type" : isPublic? 'PUBLIC' : 'PRIVATE'
-            } , {
-                headers: {
-                    authorization: `Bearer ${jwtToken}`,
-                },
-            })
-            .then((res) => {
-                console.log(res)
-                if (res.data.status_code == 5000) {
-                    toast.success(res.data.message)
-                    const shareLink = `${window.location.origin}/${res.data.data.sharable_link}`;
-                    navigator.clipboard.writeText(shareLink);
-                }
-                else if (res.data.status_code == 5002) {
-                    toast.error(res.data.message)
-                }
-                else if (res.data.status_code == 4001) {
-                    toast.error(res.data.message)
-                }
-            })
-            .catch((err) => {
-                console.log(err)
-                toast.error("some error occured !")
-            })
-            .finally(() => {
-                setpermissionLoader(false)
-            })
-    }
-
-    const HandleSingleImage = async () => {
+    const HandleGetSharedImage = async () => {
         setLoading(true)
-        const jwtToken = await getToken()
+        const jwtToken = await getToken() //getting the authentication token ....................
         axios
-            .get(`${process.env.NEXT_PUBLIC_DOMAIN}/api/v1/fileFolders/Image?imageFileID=${params.id ? params.id as string : undefined}`, {
+            .post(`${process.env.NEXT_PUBLIC_DOMAIN}/api/v1/get/sharedFileFolder?sharableUUID=${params.id ? params.id as string : undefined}`, {}, {
                 headers: {
                     authorization: `Bearer ${jwtToken}`,
                 },
-            })
-            .then((res) => {
-                if (res.data.status_code === 5000) {
-                    toast.success('Successfully fetched the image data')
-                    setFolderFileData(res.data.data)
+            },)
+            .then((response) => {
+                console.log(response)
+                if (response.data.status_code == 5000) {
+                    setFolderFileData(response.data.data)
+                    toast.success("successfully fetched the data")
+                    router.push(`/sharable/denied/no-access?from=${window.location.href}`)
                 }
-                else if (res.data.status_code === 5002) {
-                    toast.error('Failed to fetch the image data')
+                else if (response.data.status_code == 4002) {
+                    setNoAccess(true)
                 }
-            })
-            .catch((err) => {
-                console.log(err)
+            }).catch((error) => {
+                console.error(error)
             })
             .finally(() => {
                 setLoading(false)
             })
     }
-    useEffect(() => {
-        HandleSingleImage()
-    } , [])
-    // useEffect(() => {
-    //     // HandleSingleImage()
-    //     if (folderFileData?.upload_status === 'PENDING' || folderFileData?.upload_status === 'PROCESSING') {
-    //         console.log('Setting up WebSocket connection for file ID:', folderFileData.id);
-    //         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    //         if (!token) {
-    //             console.log('waiting for token')
-    //             return
-    //         }
-    //         const ws = new WebSocket(`${protocol}//127.0.0.1:8000/ws/files/?token=${token}`);
-    //         wsRef.current = ws;
-
-    //         ws.onopen = () => {
-    //             console.log('WebSocket connection established');
-    //         }
-
-    //         ws.onclose = () => {
-    //             console.log('WebSocket connection closed');
-    //         }
-
-    //         ws.onmessage = (event) => {
-    //             const data = JSON.parse(event.data);
-    //             console.log('WebSocket message received:', data);
-    //             setFolderFileData((prevData) => {
-    //                 if (data.file_id == prevData.id) {
-    //                     console.log('Updating file data for file ID:', data.file_id);
-    //                     prevData.upload_status = data.upload_status;
-    //                     prevData.file_url = data.file_url
-    //                     console.log("Updated prevData:", prevData);
-    //                     return { ...prevData };
-    //                 }
-    //                 return { ...prevData };
-    //             });
-    //         }
-    //         const pingInterval = setInterval(() => {
-    //             if (ws.readyState === WebSocket.OPEN) {
-    //                 ws.send(JSON.stringify({ type: 'ping' }));
-    //             }
-    //         }, 30000);
-
-    //         return () => {
-    //             clearInterval(pingInterval);
-    //             ws.close();
-    //             console.log('webSocket connection is closed for a while...')
-    //         }
-    //     }
-    //     else {
-    //         console.log('No need for WebSocket connection. Current upload status:', folderFileData?.upload_status);
-    //     }
-    // }, [token, folderFileData?.id])
 
 
     useEffect(() => {
-        const handler = setTimeout(() => {
-            if (userToPermission) {
-                getTheUserForAssigningPermission()
-            }
-        }, 1000);
-
-        return () => {
-            clearTimeout(handler)
-        }
-    }, [userToPermission])
-
+        HandleGetSharedImage()
+    },[])
     return (
         <div>
             <Navbar />
-            <Link href={'/dashboard'}>
-                <div className='flex  gap-1 px-4'>
-                    <IconHome stroke={2} height={20} width={20} className='text-neutral-100' />
-                    <h4 className='text-neutral-100 font-sans'>Home</h4>
-                </div>
-            </Link>
             {
                 !loading ? (
                     <div className='flex w-full  h-screen overflow-y-scroll no-scrollbar py-2 px-2'>
@@ -427,7 +171,7 @@ function page() {
                                                 <form className='w-full'>
                                                     <DialogTrigger asChild>
                                                         <Button className='w-full font-figtree text-neutral-100 bg-neutral-950 font-medium border border-neutral-800 text-lg hover:bg-neutral-800 hover:text-neutral-100' onClick={() => {
-                                                            getPermittedUsers()
+                                                            // getPermittedUsers()
                                                         }}> <IconShare stroke={2} />Share</Button>
                                                     </DialogTrigger>
                                                     <DialogContent className="sm:max-w-sm bg-neutral-950 border-2 border-neutral-800 text-nwutra">
@@ -439,12 +183,12 @@ function page() {
                                                         </DialogHeader>
                                                         <div className='flex items-center justify-between gap-2 '>
                                                             <InputGroup className='border-neutral-800'>
-                                                                <InputGroupInput placeholder="Search..." className='text-neutral-400' value={userToPermission ? userToPermission : ''} onChange={(e) => {
+                                                                {/* <InputGroupInput placeholder="Search..." className='text-neutral-400' value={userToPermission ? userToPermission : ''} onChange={(e) => {
                                                                     if (e.target.value == "") {
-                                                                        setusersWithEmailSimilarity(null)
+                                                                        // setusersWithEmailSimilarity(null)
                                                                     }
-                                                                    setUserToPermission(e.target.value)
-                                                                }} />
+                                                                    // setUserToPermission(e.target.value)
+                                                                }} /> */}
                                                                 <InputGroupAddon>
                                                                     <User2 />
                                                                 </InputGroupAddon>
@@ -453,8 +197,8 @@ function page() {
                                                                 name="permission"
                                                                 id="permission"
                                                                 className='border border-neutral-800 rounded-sm py-1.5 font-sans font-extralight text-neutral-400 bg-neutral-950 text-sm'
-                                                                value={permissionChoice}
-                                                                onChange={(e) => setPermissionChoice(e.target.value)}
+                                                                // value={permissionChoice}
+                                                                // onChange={(e) => setPermissionChoice(e.target.value)}
                                                             >
                                                                 <option value="VIEW">View</option>
                                                                 <option value="EDIT">Edit</option>
@@ -466,7 +210,7 @@ function page() {
                                                         </div>
                                                         <div>
 
-                                                            {
+                                                            {/* {
                                                                 usersWithEmailSimilarity ? (
                                                                     <div className='w-full gap-4 overflow-y-scroll h-24 no-scrollbar border-2 border-neutral-800 rounded-lg p-2'>
                                                                         {
@@ -497,7 +241,7 @@ function page() {
                                                                 ) : (
                                                                     <div></div>
                                                                 )
-                                                            }
+                                                            } */}
 
                                                         </div>
                                                         <div>
@@ -506,25 +250,27 @@ function page() {
                                                                
                                                                 <div className='w-full flex items-center gap-2' >
                                                                     <div className='w-[10%]'>
-                                                                        {
+                                                                        {/* {
                                                                             user ? (
                                                                                 <Image src={user?.imageUrl} alt='this is the profile image' height={50} width={50} className='rounded-full h-8 w-15' />
                                                                             ) : (
                                                                                 <div></div>
                                                                             )
-                                                                        }
+                                                                        } */}
                                                                     </div>
                                                                     <div className='w-[90%] text-neutral-400 flex items-center justify-between'>
                                                                         <div>
-                                                                            <h4 className='text-md font-light font-figtree text-neutral-200 text-left '>{user?.username}</h4>
-                                                                            <h6 className='font-sans text-sm'>{user?.primaryEmailAddress?.emailAddress}</h6>
+                                                                            {/* <h4 className='text-md font-light font-figtree text-neutral-200 text-left '>{user?.username}</h4>
+                                                                            <h6 className='font-sans text-sm'>{user?.primaryEmailAddress?.emailAddress}</h6> */}
+                                                                            <h4 className='text-md font-light font-figtree text-neutral-200 text-left '>public user</h4> 
+                                                                            <h6 className='font-sans text-sm'>public email</h6>
                                                                         </div>
                                                                         <div>
-                                                                            <h6 className='font-sans text-sm'>OWNER</h6>
+                                                                            <h6 className='font-sans text-sm'>{folderFileData?.permission_type || 'public'}</h6>
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                 {
+                                                                 {/* {
                                                                     permissionLoader ? (
                                                                         <InfiniteLoader />
                                                                     ) : (
@@ -532,8 +278,8 @@ function page() {
 
                                                                         </div>
                                                                     )
-                                                                }
-                                                                {
+                                                                } */}
+                                                                {/* {
                                                                     usersWithPermission.map((user: usersWithPermission) => (
                                                                         <div className='w-full flex items-center gap-2' key={user.id}>
                                                                             <div className='w-[10%]'>
@@ -556,7 +302,7 @@ function page() {
                                                                             </div>
                                                                         </div>
                                                                     ))
-                                                                }
+                                                                } */}
                                                             </div>
                                                         </div>
                                                         {/* <div className='w-full text-neutral-100 font-sans flex'>
@@ -573,7 +319,7 @@ function page() {
                                                         </div> */}
 
                                                         <div className='flex items-center gap-3'>
-                                                            {
+                                                            {/* {
                                                                 isPublic ? (
                                                                     <ButtonGroup>
                                                                         <Button className='bg-green-700'><IconGlobe stroke={2} height={20} width={20} /></Button>
@@ -589,8 +335,8 @@ function page() {
                                                                         <Button className='bg-blue-700' ><IconLock stroke={2} height={20} width={20} /></Button>
                                                                     </ButtonGroup>
                                                                 )
-                                                            }
-                                                            {
+                                                            } */}
+                                                            {/* {
                                                                 isPublic ? (
                                                                     <h3 className='text-green-600 text-xm font-extralight font-figtree flex items-center'>This Link is Accessible by All<IconGlobeFilled stroke={2} /></h3>
 
@@ -598,16 +344,16 @@ function page() {
                                                                     <h3 className='text-blue-600 text-xm font-extralight font-figtree flex items-center'>This Link is Protected access<IconLockAccess stroke={2} /></h3>
 
                                                                 )
-                                                            }
+                                                            } */}
                                                         </div>
                                                         <DialogFooter className='flex justify-between'>
 
                                                             <DialogClose asChild>
                                                                 <Button variant="outline" className='flex items-center gap-2' onClick={() => {
-                                                                    getShareLink()
+                                                                    // getShareLink()
                                                                 }}   ><IconLink stroke={2} />Copy Link</Button>
                                                             </DialogClose>
-                                                            <Button onClick={HandleUpdatePermission}>
+                                                            {/* <Button onClick={HandleUpdatePermission}>
                                                                 {
                                                                     upDatePermissionLoader ? (
                                                                         <InfiniteLoader />
@@ -618,7 +364,7 @@ function page() {
                                                                     )
                                                                 }
                                                                 
-                                                                </Button>
+                                                                </Button> */}
                                                         </DialogFooter>
                                                     </DialogContent>
                                                 </form>
@@ -675,7 +421,6 @@ function page() {
                     <InfiniteLoader />
                 )
             }
-
         </div>
     )
 }

@@ -152,7 +152,7 @@ function page() {
                         toast.success("Item moved to Trash.")
                         GetUpdatedFileFolderData(fileFolderID)
                     }
-                    else if (res.data.status_code === 5001) {
+                    else if (res.data.status_code === 5002) {
                         toast.error("Xant Delete item. Move to Trash failed.")
                     }
                 })
@@ -179,7 +179,7 @@ function page() {
                         toast.success("Item added to Favorite.")
                         // GetUpdatedFileFolderData()
                     }
-                    else if (res.data.status_code === 5001) {
+                    else if (res.data.status_code === 5002) {
                         toast.error("Marking Favorite failed.")
                     }
                 })

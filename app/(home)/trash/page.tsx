@@ -144,7 +144,7 @@ function page() {
             toast.success("Item moved to Dashboard.")
             GetUpdatedFileFolderData()
           }
-          else if (res.data.status_code === 5001) {
+          else if (res.data.status_code === 5002) {
             toast.error("Xant Delete item. Move to Trash failed.")
           }
         })
