@@ -95,7 +95,7 @@ function page() {
         console.log("JWT TOKEN IN UPDATE FUNC OF FAVORITE PAGE", jwtToken)
         // GET Request that is used to fetch all the folder/file data
         axios
-            .get(getREQUEST, {
+            .get(`${process.env.NEXT_PUBLIC_DOMAIN}/api/v1/fileFolders/Favorite`, {
                 headers: {
                     authorization: `Bearer ${jwtToken}`,
                 },
@@ -140,8 +140,8 @@ function page() {
                         toast.success("Item moved to Dashboard.")
                         GetUpdatedFileFolderData()
                     }
-                    else if (res.data.status_code === 5001) {
-                        toast.error("Xant Delete item. Move to Trash failed.")
+                    else if (res.data.status_code === 5002) {
+                        toast.error(" Move to Trash failed.")
                     }
                 })
                 .catch((err) => {
@@ -166,7 +166,7 @@ function page() {
                         toast.success("Item added to Favorite.")
                         GetUpdatedFileFolderData()
                     }
-                    else if (res.data.status_code === 5001) {
+                    else if (res.data.status_code === 5002) {
                         toast.error("Marking Favorite failed.")
                     }
                 })

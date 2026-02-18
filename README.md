@@ -84,25 +84,6 @@ You can start editing the dashboard by modifying `app/(home)/dashboard/page.tsx`
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Folder Structure
-
-```
-filedrive/
-├── app/
-│   ├── (home)/dashboard/page.tsx   # Main dashboard page
-│   └── ...
-├── components/                     # Reusable UI components
-├── data/                           # Static data files
-├── lib/                            # Utility functions
-├── public/                         # Static assets
-├── ...
-```
-
-## API & Backend
-
-- The dashboard fetches file/folder data from a backend API (see `getREQUEST` in the dashboard page).
-- Authentication is handled via Clerk.
-- File uploads and folder creation trigger API calls and update the UI in real time.
 
 ## Contributing
 
