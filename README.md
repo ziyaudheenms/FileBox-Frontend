@@ -46,95 +46,42 @@ The dashboard page (`app/(home)/dashboard/page.tsx`) is the main hub for file ma
 ## Folder Structure
 
 ```
-components.json
-eslint.config.mjs
-middleware.ts
-next-env.d.ts
-next.config.ts
-package.json
-postcss.config.mjs
-README.md
-tsconfig.json
-app/
-    globals.css
-    layout.tsx
-    page.tsx
-    (auth)/
-        layout.tsx
-        sign-in/
-            page.tsx
-        sign-up/
-            page.tsx
-    (home)/
-        layout.tsx
-        dashboard/
-            page.tsx
-            [...id]/
-                page.tsx
-        Documents/
-            page.tsx
-            [id]/
-                page.tsx
-        favorites/
-            page.tsx
-        images/
-            page.jsx
-            [id]/
-                page.tsx
-        others/
-            page.tsx
-            [id]/
-                page.tsx
-        sharable/
-            image/
-                [id]/
-                    page.tsx
-        test/
-            [...id]/
-                page.tsx
-        trash/
-            page.tsx
-components/
-    CreateFolder.tsx
-    EmptyPage.tsx
-    FileFolderCards.tsx
-    FileUpload.tsx
-    ImageProcessing.tsx
-    InfiniteLoader.tsx
-    navbar.tsx
-    NoAccess.tsx
-    RecentUploads.tsx
-    SideBarNavItems.tsx
-    StorageUpdate.tsx
-    ui/
-        alert-dialog.tsx
-        button-group.tsx
-        button.tsx
-        card.tsx
-        dialog.tsx
-        dropdown-menu.tsx
-        empty.tsx
-        field.tsx
-        input-group.tsx
-        input.tsx
-        label.tsx
-        separator.tsx
-        sonner.tsx
-        spinner.tsx
-        textarea.tsx
-        toggle-group.tsx
-        toggle.tsx
-data/
-    SideBar.tsx
-lib/
-    utils.ts
-public/
-    logo.html
-    logo_files/
-        index-DAMeWpAu.css
-        photo-1472099645785-5658abf4ff4e
-        photo-1472099645785-5658abf4ff4e(1)
-        photo-1506905925346-21bda4d32df4
+filebox-frontend/
+├── package.json              # Project dependencies & scripts
+├── next.config.ts            # Next.js configuration settings
+├── tsconfig.json             # TypeScript compiler options
+├── middleware.ts             # Clerk auth & routing middleware
+├── tailwind.config.ts        # Styling & design tokens
+├── README.md                 # Project overview & setup
+├── app/                      # Next.js App Router (Core Logic)
+│   ├── globals.css           # Global styles & Tailwind imports
+│   ├── layout.tsx            # Root layout (Html, Body, Providers)
+│   ├── page.tsx              # Landing page / Root entry
+│   ├── (auth)/               # Authentication route group
+│   │   ├── sign-in/          # Clerk Sign-in integration
+│   │   └── sign-up/          # Clerk Sign-up integration
+│   └── (home)/               # Protected application area
+│       ├── layout.tsx        # Dashboard layout (Sidebar + Nav)
+│       ├── dashboard/        # Main file manager & search
+│       ├── images/           # Filtered image gallery
+│       ├── Documents/        # Filtered document manager
+│       ├── favorites/        # Starred files & folders
+│       ├── trash/            # Recycled items for auto-deletion
+│       └── sharable/         # Public/Private shared link views
+├── components/               # Reusable UI Components
+│   ├── ui/                   # Atomic Shadcn/UI components
+│   ├── navbar.tsx            # Top navigation & Search bar
+│   ├── FileUpload.tsx        # Drag & drop upload logic
+│   ├── CreateFolder.tsx      # Folder creation modal
+│   ├── StorageUpdate.tsx     # Real-time storage usage visuals
+│   ├── RecentUploads.tsx     # Quick access activity feed
+│   └── InfiniteLoader.tsx    # Paginated scrolling logic
+├── lib/                      # Helper functions & constants
+│   └── utils.ts              # Tailwind merging & formatting
+├── data/                     # Static configurations
+│   └── SideBar.tsx           # Sidebar link mapping
+└── public/                   # Static assets
+    └── logo_files/           # Branding & design assets
 ```
 
 ## API & Backend
