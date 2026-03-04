@@ -15,6 +15,16 @@ const nextConfig: NextConfig = {
         hostname: 'encrypted-tbn0.gstatic.com',
         pathname: '/**', // Allows all images from this host
       },
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
+        pathname: '/**'
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.clerk.dev',
+        pathname: '/**'
+      }
     ],
     
   },

@@ -1,5 +1,5 @@
 
-# FileBox - File Storage Web App
+# FileBox - Cloud Storage Platform
 
 FileBox is a modern cloud storage web application built with [Next.js](https://nextjs.org), providing a secure and user-friendly interface to manage, upload, and organize your files. The project leverages a clean dashboard UI, advanced file/folder management, and real-time cloud storage statistics.
 
@@ -32,12 +32,6 @@ The dashboard page (`app/(home)/dashboard/page.tsx`) is the main hub for file ma
 	- **Storage Status**: Visual bar and stats for storage usage (used, free, by type).
 	- **Recent Uploads**: List of recently uploaded files with size and time info.
 
-### Dashboard UI Example
-
-![Dashboard Screenshot](#)
-
-> The dashboard provides a seamless experience for managing files, with intuitive controls and real-time updates. (See the attached screenshot for a visual reference.)
-
 ## Technologies Used
 
 - **Next.js** (App Router)
@@ -48,6 +42,54 @@ The dashboard page (`app/(home)/dashboard/page.tsx`) is the main hub for file ma
 - **Axios** (API requests)
 - **Sonner** (notifications)
 - **Tabler Icons & Lucide React** (icons)
+
+## Folder Structure
+
+```
+filebox-frontend/
+├── package.json              # Project dependencies & scripts
+├── next.config.ts            # Next.js configuration settings
+├── tsconfig.json             # TypeScript compiler options
+├── middleware.ts             # Clerk auth & routing middleware
+├── tailwind.config.ts        # Styling & design tokens
+├── README.md                 # Project overview & setup
+├── app/                      # Next.js App Router (Core Logic)
+│   ├── globals.css           # Global styles & Tailwind imports
+│   ├── layout.tsx            # Root layout (Html, Body, Providers)
+│   ├── page.tsx              # Landing page / Root entry
+│   ├── (auth)/               # Authentication route group
+│   │   ├── sign-in/          # Clerk Sign-in integration
+│   │   └── sign-up/          # Clerk Sign-up integration
+│   └── (home)/               # Protected application area
+│       ├── layout.tsx        # Dashboard layout (Sidebar + Nav)
+│       ├── dashboard/        # Main file manager & search
+│       ├── images/           # Filtered image gallery
+│       ├── Documents/        # Filtered document manager
+│       ├── favorites/        # Starred files & folders
+│       ├── trash/            # Recycled items for auto-deletion
+│       └── sharable/         # Public/Private shared link views
+├── components/               # Reusable UI Components
+│   ├── ui/                   # Atomic Shadcn/UI components
+│   ├── navbar.tsx            # Top navigation & Search bar
+│   ├── FileUpload.tsx        # Drag & drop upload logic
+│   ├── CreateFolder.tsx      # Folder creation modal
+│   ├── StorageUpdate.tsx     # Real-time storage usage visuals
+│   ├── RecentUploads.tsx     # Quick access activity feed
+│   └── InfiniteLoader.tsx    # Paginated scrolling logic
+├── lib/                      # Helper functions & constants
+│   └── utils.ts              # Tailwind merging & formatting
+├── data/                     # Static configurations
+│   └── SideBar.tsx           # Sidebar link mapping
+└── public/                   # Static assets
+    └── logo_files/           # Branding & design assets
+```
+
+## API & Backend
+
+- Dashboard fetches file/folder data from backend API via `getREQUEST`
+- Authentication handled by Clerk
+- File uploads and folder creation trigger API calls with real-time UI updates
+
 
 ## Getting Started
 
@@ -84,25 +126,6 @@ You can start editing the dashboard by modifying `app/(home)/dashboard/page.tsx`
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Folder Structure
-
-```
-filedrive/
-├── app/
-│   ├── (home)/dashboard/page.tsx   # Main dashboard page
-│   └── ...
-├── components/                     # Reusable UI components
-├── data/                           # Static data files
-├── lib/                            # Utility functions
-├── public/                         # Static assets
-├── ...
-```
-
-## API & Backend
-
-- The dashboard fetches file/folder data from a backend API (see `getREQUEST` in the dashboard page).
-- Authentication is handled via Clerk.
-- File uploads and folder creation trigger API calls and update the UI in real time.
 
 ## Contributing
 
